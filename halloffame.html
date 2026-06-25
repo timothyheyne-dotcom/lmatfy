@@ -272,9 +272,6 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://wfewxvneijnxjmloasuy.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_8Qd3IMK1FeVR1teBURYuyQ_p8TUSgJx';
-
   const rankLabels = ['🥇', '🥈', '🥉'];
   const rankClasses = ['gold', 'silver', 'bronze'];
 
@@ -284,15 +281,7 @@
   async function loadHallOfFame() {
     const el = document.getElementById('leaderboard');
     try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/questions?approved=eq.true&order=upvotes.desc&limit=3`,
-        {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        }
-      );
+      const res = await fetch('/.netlify/functions/halloffame');
       const data = await res.json();
 
       if (!data || data.length === 0) {
@@ -325,34 +314,15 @@
     btn.classList.add('voted');
 
     try {
-      // Get current upvotes
-      const getRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/questions?id=eq.${id}&select=upvotes`,
-        {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        }
-      );
-      const rows = await getRes.json();
-      const newCount = ((rows[0] && rows[0].upvotes) || 0) + 1;
-
-      // Update upvotes
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/questions?id=eq.${id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ upvotes: newCount })
-        }
-      );
-      countEl.textContent = newCount;
+      const upvoteRes = await fetch('/.netlify/functions/upvote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await upvoteRes.json();
+      if (data.upvotes !== undefined) {
+        countEl.textContent = data.upvotes;
+      }
     } catch (err) {
       // silent fail
       voted.delete(id);

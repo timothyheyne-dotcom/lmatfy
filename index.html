@@ -651,16 +651,11 @@
     document.getElementById('share-label').textContent = '← send this link to whoever asked you';
     shareRow.classList.add('show');
 
-    // Save question directly to Supabase
-    fetch('https://wfewxvneijnxjmloasuy.supabase.co/rest/v1/questions', {
+    // Save question via Netlify function
+    fetch('/.netlify/functions/submit', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'sb_publishable_8Qd3IMK1FeVR1teBURYuyQ_p8TUSgJx',
-        'Authorization': 'Bearer sb_publishable_8Qd3IMK1FeVR1teBURYuyQ_p8TUSgJx',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ question: q, approved: false, upvotes: 0 })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q })
     }).catch(() => {}); // silent fail — don't interrupt user experience
   }
 
