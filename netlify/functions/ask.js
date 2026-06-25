@@ -17,17 +17,23 @@ exports.handler = async (event) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-4-5',
         max_tokens: 1024,
         messages: [{ role: 'user', content: question.trim() }]
       })
     });
 
     const data = await response.json();
+    console.log('Anthropic response status:', response.status);
+    console.log('Anthropic response:', JSON.stringify(data));
+
     const answer = data.content && data.content[0] && data.content[0].text;
 
     if (!answer) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'No answer returned' }) };
+      return { 
+        statusCode: 500, 
+        body: JSON.stringify({ error: 'No answer returned', debug: data }) 
+      };
     }
 
     return {
@@ -37,6 +43,7 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server error' }) };
+    console.log('Error:', err.message);
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
