@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMATFY.fyi — Let Me Ask That For You</title>
+  <meta name="description" content="Can't be bothered to ask AI yourself? Let us do it for you." />
+  <meta property="og:title" content="LMATFY.fyi — Let Me Ask That For You" />
+  <meta property="og:description" content="Someone thought you needed help asking AI. They were probably right." />
+  <meta property="og:url" content="https://lmatfy.fyi" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%237F77DD'/><text y='78' x='50' text-anchor='middle' font-size='72' font-family='Georgia,serif' font-weight='bold' fill='white'>A</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f7f9;
+      --border: #e0e0e8;
+      --accent: #7F77DD;
+      --accent-dim: #534AB7;
+      --accent-light: #EEEDFE;
+      --text: #111118;
+      --muted: #888796;
+      --mono: 'DM Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      overflow-x: hidden;
+    }
+
+
+
+    #app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 2rem 2rem 0;
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+    }
+
+    .wordmark {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .wordmark .accent { color: var(--accent); }
+
+    .tagline-small {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.1s forwards;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 7vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      max-width: 700px;
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 440px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.3s forwards;
+    }
+
+    /* ── INPUT FORM ── */
+    .input-wrap {
+      width: 100%;
+      max-width: 580px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.4s forwards;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+      background: var(--surface);
+    }
+
+    .input-row:focus-within {
+      border-color: var(--accent);
+    }
+
+    .input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 1rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      min-width: 0;
+    }
+
+    .input-row input::placeholder { color: var(--muted); }
+
+    .input-row button {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0 1.5rem;
+      font-family: var(--display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .input-row button:hover { background: var(--accent-dim); color: #fff; }
+    .input-row button:active { background: #3C3489; color: #fff; }
+
+    .hint {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 0.6rem;
+      text-align: left;
+      padding-left: 2px;
+    }
+
+    /* ── DEMO PANEL ── */
+    #demo-panel {
+      width: 100%;
+      max-width: 580px;
+      margin-top: 2rem;
+      display: none;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+
+    #demo-panel.visible {
+      display: block;
+    }
+
+    #demo-panel.shown {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .demo-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* fake browser chrome */
+    .browser-chrome {
+      background: #f0f0f4;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dots { display: flex; gap: 5px; }
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .fake-url {
+      flex: 1;
+      background: #e4e4ec;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fake-url .url-accent { color: var(--accent); font-weight: 500; }
+
+    /* AI search bar inside demo */
+    .demo-body { padding: 1.5rem; }
+
+    .ai-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .ai-searchbar {
+      border: 1.5px solid var(--accent);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(127,119,221,0.05);
+      min-height: 52px;
+    }
+
+    .ai-spark {
+      color: var(--accent);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    #typed-text {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent);
+      vertical-align: middle;
+      margin-left: 1px;
+      animation: blink 0.75s step-end infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* CTA button */
+    #ask-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--display);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transition: opacity 0.4s, background 0.15s, transform 0.1s;
+    }
+
+    #ask-btn:hover { background: var(--accent-dim); color: #fff; }
+    #ask-btn:active { transform: scale(0.99); }
+    #ask-btn.show { opacity: 1; }
+
+    /* share row */
+    .share-row {
+      margin-top: 1rem;
+      display: none;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .share-row.show { display: flex; }
+
+    .share-url {
+      flex: 1;
+      background: #f0f0f4;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.55rem 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.55rem 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .share-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── LANDING MODE (shared link view) ── */
+    #landing-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+
+    #landing-view.active { display: flex; }
+
+    .landing-from {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .landing-title {
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .landing-sub {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+    }
+
+    .landing-searchbar {
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(127,119,221,0.05);
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 1.5rem;
+      min-height: 56px;
+    }
+
+    #landing-typed {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      color: var(--text);
+      flex: 1;
+      text-align: left;
+    }
+
+    #landing-ask-btn {
+      width: 100%;
+      max-width: 560px;
+      padding: 1rem;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--display);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.4s, background 0.15s;
+    }
+
+    #landing-ask-btn:hover { background: var(--accent-dim); }
+    #landing-ask-btn.show { opacity: 1; }
+
+    .landing-footer {
+      margin-top: 3rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .landing-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    footer span {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 500px) {
+      header { padding: 1.2rem 1.2rem 0; }
+      .hero { padding: 2rem 1.2rem 1.5rem; }
+      .input-row button { padding: 0 1rem; font-size: 0.8rem; }
+      footer { padding: 1rem 1.2rem; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-75HPFYNRFN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-75HPFYNRFN');
+  </script>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     MAIN VIEW (create a link)
+════════════════════════════════ -->
+<div id="main-view">
+  <div id="app">
+    <header>
+      <div class="wordmark">LM<span class="accent">A</span>TFY.fyi</div>
+      <div class="tagline-small">Let Me Ask That For You</div>
+    </header>
+
+    <section class="hero">
+      <p class="hero-sub">Type their question below. We'll generate a link that does it for them — dramatically.</p>
+
+      <div class="input-wrap">
+        <div class="input-row">
+          <input type="text" id="query-input" placeholder="what is the capital of France..." maxlength="280" autocomplete="off" />
+          <button onclick="generateLink()">Generate ↗</button>
+        </div>
+        <p class="hint">↵ press enter or click generate</p>
+      </div>
+
+      <!-- Demo / preview panel -->
+      <div id="demo-panel">
+        <div class="demo-card">
+          <div class="browser-chrome">
+            <div class="dots">
+              <div class="dot dot-r"></div>
+              <div class="dot dot-y"></div>
+              <div class="dot dot-g"></div>
+            </div>
+            <div class="fake-url" id="fake-url">
+              <span class="url-accent">lmatfy.fyi</span>/?q=...
+            </div>
+          </div>
+          <div class="demo-body">
+            <div class="ai-label">Asking Claude AI</div>
+            <div class="ai-searchbar">
+              <span class="ai-spark">✦</span>
+              <span id="typed-text"></span>
+              <span class="cursor-blink" id="demo-cursor"></span>
+            </div>
+
+            <button id="ask-btn" onclick="goToClaude(currentQuery)">Ask Claude AI →</button>
+
+            <div class="share-row" id="share-row">
+              <div class="share-url" id="share-url-display"></div>
+              <button class="copy-btn" id="copy-btn" onclick="copyLink()">Copy link</button>
+            </div>
+            <p class="share-label" id="share-label"></p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <footer>
+      <span>© 2026 LMATFY.fyi</span>
+      <span>🏆 Hall of Fame — coming soon</span>
+      <span>The passive-aggressive AI link generator</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     LANDING VIEW (shared link received)
+════════════════════════════════ -->
+<div id="landing-view">
+  <div class="wordmark" style="margin-bottom:2rem;">LM<span class="accent">A</span>TFY.fyi</div>
+
+  <p class="landing-from">Someone sent you this link because...</p>
+  <h1 class="landing-title">You could've just<br>asked <em style="color:var(--accent);">AI</em> yourself...</h1>
+  <p class="landing-sub">But here we are. Your question is ready and waiting.</p>
+
+  <div class="landing-searchbar">
+    <span class="ai-spark">✦</span>
+    <span id="landing-typed"></span>
+    <span class="cursor-blink" id="landing-cursor"></span>
+  </div>
+
+  <button id="landing-ask-btn">Ask Claude AI →</button>
+  <div id="answer-box" style="display:none;width:100%;max-width:560px;margin-top:1.5rem;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;text-align:left;"><div style="font-family:var(--mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem;">✦ Claude says</div><div id="answer-text" style="font-family:var(--mono);font-size:0.88rem;color:var(--text);line-height:1.7;white-space:pre-wrap;"></div></div>
+
+  <div class="landing-footer">
+    Want to send one to someone? Visit <a href="https://lmatfy.fyi">lmatfy.fyi</a>
+  </div>
+</div>
+
+<script>
+  let currentQuery = '';
+  let typingTimer = null;
+
+  // ── On page load: check for ?q= param ──
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q && q.trim()) {
+      // Show landing view
+      document.getElementById('main-view').style.display = 'none';
+      const lv = document.getElementById('landing-view');
+      lv.classList.add('active');
+      const btn = document.getElementById('landing-ask-btn');
+      btn.addEventListener('click', () => askClaude(q.trim()));
+      typeTo(document.getElementById('landing-typed'), q.trim(), document.getElementById('landing-cursor'), () => {
+        btn.classList.add('show');
+      });
+    }
+  });
+
+  // ── Enter key support ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.activeElement === document.getElementById('query-input')) {
+      generateLink();
+    }
+  });
+
+  // ── Generate link & animate ──
+  function generateLink() {
+    const input = document.getElementById('query-input');
+    const q = input.value.trim();
+    if (!q) { input.focus(); return; }
+    currentQuery = q;
+
+    const encoded = encodeURIComponent(q);
+    const fullUrl = 'https://lmatfy.fyi/?q=' + encoded;
+    const displayUrl = 'lmatfy.fyi/?q=' + (encoded.length > 40 ? encoded.slice(0,40) + '...' : encoded);
+
+    // Set up panel
+    document.getElementById('fake-url').innerHTML = '<span class="url-accent">lmatfy.fyi</span>/?q=' + (encoded.length > 30 ? encoded.slice(0,30) + '...' : encoded);
+    document.getElementById('typed-text').textContent = '';
+    document.getElementById('ask-btn').classList.remove('show');
+    document.getElementById('share-row').classList.remove('show');
+    document.getElementById('share-label').textContent = '';
+    document.getElementById('demo-cursor').style.display = 'inline-block';
+
+    const panel = document.getElementById('demo-panel');
+    panel.style.display = 'block';
+    panel.classList.remove('shown');
+    requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('shown')));
+
+    if (typingTimer) clearTimeout(typingTimer);
+    // Instantly populate — no typing animation on creator side
+    document.getElementById('typed-text').textContent = q;
+    document.getElementById('demo-cursor').style.display = 'none';
+    document.getElementById('ask-btn').classList.add('show');
+    const shareRow = document.getElementById('share-row');
+    document.getElementById('share-url-display').textContent = fullUrl;
+    document.getElementById('share-url-display').dataset.fullUrl = fullUrl;
+    document.getElementById('share-label').textContent = '← send this link to whoever asked you';
+    shareRow.classList.add('show');
+
+    // Save question directly to Supabase
+    fetch('https://wfewxvneijnxjmloasuy.supabase.co/rest/v1/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'sb_publishable_8Qd3IMK1FeVR1teBURYuyQ_p8TUSgJx',
+        'Authorization': 'Bearer sb_publishable_8Qd3IMK1FeVR1teBURYuyQ_p8TUSgJx',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ question: q, approved: false, upvotes: 0 })
+    }).catch(() => {}); // silent fail — don't interrupt user experience
+  }
+
+  // ── Typing animation ──
+  function typeTo(el, text, cursorEl, onDone) {
+    let i = 0;
+    el.textContent = '';
+    if (cursorEl) cursorEl.style.display = 'inline-block';
+
+    function step() {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+        typingTimer = setTimeout(step, 45 + Math.random() * 35);
+      } else {
+        if (cursorEl) cursorEl.style.display = 'none';
+        if (onDone) setTimeout(onDone, 300);
+      }
+    }
+    step();
+  }
+
+  // ── Open Claude with question ──
+  async function askClaude(q) {
+    const btn = document.getElementById('landing-ask-btn');
+    const answerBox = document.getElementById('answer-box');
+    const answerText = document.getElementById('answer-text');
+
+    btn.textContent = 'Asking Claude...';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+    answerBox.style.display = 'none';
+    answerText.textContent = '';
+
+    try {
+      const res = await fetch('/.netlify/functions/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+
+      const data = await res.json();
+      const answer = data.answer;
+
+      if (answer) {
+        answerBox.style.display = 'block';
+        btn.style.display = 'none';
+        let i = 0;
+        answerText.textContent = '';
+        function typeAnswer() {
+          if (i < answer.length) {
+            answerText.textContent += answer[i];
+            i++;
+            setTimeout(typeAnswer, 8);
+          }
+        }
+        typeAnswer();
+      } else {
+        btn.textContent = 'Try again';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      btn.textContent = 'Try again';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  function goToClaude(q) {
+    const url = 'https://claude.ai/new?q=' + encodeURIComponent(q);
+    window.open(url, '_blank');
+  }
+
+  // ── Copy link ──
+  function copyLink() {
+    const url = document.getElementById('share-url-display').dataset.fullUrl
+             || document.getElementById('share-url-display').textContent;
+    const btn = document.getElementById('copy-btn');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = 'Copied ✓';
+        btn.style.color = 'var(--accent)';
+        btn.style.borderColor = 'var(--accent)';
+        setTimeout(() => {
+          btn.textContent = 'Copy link';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2500);
+      });
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => { btn.textContent = 'Copy link'; }, 2500);
+    }
+  }
+</script>
+</body>
+</html>
